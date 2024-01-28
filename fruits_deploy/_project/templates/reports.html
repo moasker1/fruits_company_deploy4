@@ -1,0 +1,133 @@
+{% load static %}
+{% load i18n %}
+{% language 'ar' %}
+{% load arabic_numbers %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "css/reports.css" %}">
+    <title>التقارير</title>
+</head>
+<body>
+<div class="backcon">
+    <img src="{% static "images/tigertech.png" %}" id="tigerLogo">  
+    <div class="leftcon">
+        <div class="reports" id="reports">
+            <h2>التقارير</h2>
+            <div class="table" style="width: 90%;">
+                <input id="searchbar" type="date" >
+                <table>
+                    <thead>
+                        <tr>
+                            <th>نوع العملية</th>
+                            <th>اسم المستخدم</th>
+                            <th>التاريخ</th>
+                            <th>الوقت</th>
+                            <th colspan="3">التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablebody1">
+                        {% for action in recent_actions %}
+                        <tr>
+                            <td>{{action.action_type}}</td>
+                            <td> {{action.user}}</td>
+                            <td style="display: none;" >{{action.timestamp|date:"20y-m-d"}}</td>
+                            <td>{{action.timestamp|date:"20y/m/d"|arabic_numbers}}</td>
+                            <td style="display: none;">{{action.timestamp|time}}</td>
+                            <td>{{action.timestamp|time|arabic_numbers}}</td>
+                            <td colspan="3">{{action.model_affected}} </td>
+                        </tr>
+                        {%endfor%}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="employee" id="employee">
+            <h2>الموظفين</h2>
+            <div class="table" style="width: 90%;">
+
+                <form method="POST" class="addUser">
+                    {% csrf_token %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    <input type="text" name="username" id="name" placeholder="اسم المستخدم" required oninvalid="this.setCustomValidity('يرجى ادخال اسم المستخدم')">
+                    <input type="text" name="password" id="name" placeholder="كلمة المرور" required oninvalid="this.setCustomValidity('يرجى ادخال كلمة المرور')">
+                    <select name="firstname" id="gender">
+                        <option value="شبه مسئول">شبه مسئول</option>
+                        <option value="مستخدم متقدم">مستخدم متقدم</option>
+                        <option value="مستخدم عادي">مستخدم</option>
+                    </select>
+                    <button type="submit">اضافة مستخدم</button>
+                </form>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اسم المستخدم</th>
+                            <th>الحالة</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablebody">
+                        {% for user in users  %}
+                        <tr>
+                            <td>{{user.username}}</td>
+                            <td>{{user.first_name}}</td>
+                            <td style="display: none;"></td>
+                            <td style="display: none;"></td>
+                            {% if user.username != "محمدبعجر" %}
+                            <td><a href="{% url "userdelete" user.id %}" style="background-color: #c10;" class="dettype"  id="sellbtn">حذف</a></td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="rightcon">
+        <div class="righttitle">
+            <img src="{% static "images/logo.png" %}">
+            <h2>صفحه المسئـول</h2>
+        </div>
+        <ul>
+            <a href="#reports"><li>التقارير</li></a>
+            <a href="#employee"><li>الموظفين</li></a>
+            <a href="{% url 'home' %}" id="logout"><li>عودة</li></a>
+        </ul>
+    </div>
+</div>
+<script>
+    let tablebody = document.getElementById('tablebody1')
+    let searchbar = document.getElementById('searchbar')
+    searchbar.addEventListener('change',()=>{
+        const reportDate = document.getElementById('searchbar').value
+        console.log(reportDate)
+        let filter = searchbar.value.toUpperCase();
+        let tr= tablebody.getElementsByTagName('tr');
+                for(var i=0; i<tr.length; i++){
+                    let td = tr[i].getElementsByTagName('td')[2];
+                    if(td){
+                        let txtvalue = td.textContent;
+                        if(txtvalue.toLocaleUpperCase().indexOf(filter)>-1){
+                            tr[i].style.display='';
+                            
+                        }else{   
+                            tr[i].style.display='none';
+                        }
+                    }
+                }
+
+    })
+</script>
+</body>
+</html>
+{% endlanguage %}
